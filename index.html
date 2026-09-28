@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Askeri Simülasyon</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #e30a17; /* Türk Bayrağı Kırmızısı */
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        /* Bayrak Arka Plan Efekti */
+        .turk-bayrak-bg {
+            background: linear-gradient(135deg, #e30a17 60%, #b30000 100%);
+            border: 10px solid #fff;
+        }
+
+        /* Menü Stilleri */
+        h1 {
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .btn {
+            background-color: #fff;
+            color: #e30a17;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        /* Oyun Ekranı Üst Bilgiler */
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+
+        .exit-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #fff;
+            color: #e30a17;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .exit-btn:hover {
+            background-color: #ddd;
+        }
+
+        /* Çöp Adam Alanı */
+        .character-container {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            position: relative;
+            padding: 20px;
+        }
+
+        .tag-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+
+        /* Çöp Adam Çizimi */
+        .stickman {
+            width: 100px;
+            height: 200px;
+            position: relative;
+            transition: filter 0.3s;
+        }
+
+        .head {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #fff;
+            border-radius: 50%;
+            position: absolute;
+            left: 30px;
+            top: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .face {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .body-line {
+            width: 4px;
+            height: 70px;
+            background-color: #fff;
+            position: absolute;
+            left: 48px;
+            top: 40px;
+        }
+
+        .arms {
+            width: 80px;
+            height: 4px;
+            background-color: #fff;
+            position: absolute;
+            left: 10px;
+            top: 60px;
+        }
+
+        .legs {
+            width: 4px;
+            height: 70px;
+            background-color: #fff;
+            position: absolute;
+            left: 30px;
+            top: 110px;
+            transform: rotate(20deg);
+            transform-origin: top;
+        }
+
+        .legs.right {
+            left: 66px;
+            transform: rotate(-20deg);
+        }
+
+        /* Bitiş Ekranı */
+        .end-screen {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .end-box {
+            background-color: #f4f4f4;
+            border: 2px solid #000;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .end-box h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #222;
+        }
+
+        .end-box a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #0066cc;
+            font-size: 20px;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Ekran: İsim Seçme Menüsü -->
+    <div id="screen-nickname" class="screen active turk-bayrak-bg">
+        <h1>Askeri Simülasyona Hoş Geldin</h1>
+        <p style="margin-bottom: 20px; font-size: 18px;">Lütfen Kod Adını Seç:</p>
+        <button class="btn" onclick="selectNickname('SonApoBükücü')">SonApoBükücü</button>
+        <button class="btn" onclick="selectNickname('PKKfethişi')">PKKfethişi</button>
+    </div>
+
+    <!-- 2. Ekran: 4 Seçenek Menüsü -->
+    <div id="screen-options" class="screen turk-bayrak-bg">
+        <h1>Operasyon Seç</h1>
+        <button class="btn" onclick="startAction(1)">1. Seçenek: Apo kırbaçlama</button>
+        <button class="btn" onclick="startAction(2)">2. Seçenek: Apo bombalama</button>
+        <button class="btn" onclick="startAction(3)">3. Seçenek: PKK kırbaçlama</button>
+        <button class="btn" onclick="startAction(4)">4. Seçenek: PKK bombalama</button>
+    </div>
+
+    <!-- 3. Ekran: Oyun Alanı -->
+    <div id="screen-game" class="screen turk-bayrak-bg">
+        <div class="hud" id="hud-text"></div>
+        <button class="exit-btn" onclick="endGame()">bitir</button>
+
+        <div class="character-container" onclick="interactCharacter()">
+            <div class="tag-name" id="char-tag">APO</div>
+            <div class="stickman" id="stickman-body">
+                <div class="head">
+                    <div class="face" id="face-icon">😊</div>
+                </div>
+                <div class="body-line"></div>
+                <div class="arms"></div>
+                <div class="legs"></div>
+                <div class="legs right"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Ekran: Bitiş Odası -->
+    <div id="screen-end" class="screen end-screen">
+        <div class="end-box">
+            <h2>aferim asker iyi savaştı</h2>
+            <a href="https://www.myinstants.com/en/instant/basayim-apoya-76938/?utm_source=copy&utm_medium=share" target="_blank">buna tıkla</a>
+        </div>
+    </div>
+
+    <script>
+        let currentNickname = "";
+        let currentMode = 1;
+        let xp = 0;
+
+        function selectNickname(name) {
+            currentNickname = name;
+            switchScreen('screen-options');
+        }
+
+        function startAction(mode) {
+            currentMode = mode;
+            xp = 0;
+            updateHUD();
+            
+            // Etiket metnini belirleme (1 ve 2 için APO, 3 ve 4 için PKK)
+            const tag = document.getElementById('char-tag');
+            if (mode === 1 || mode === 2) {
+                tag.innerText = "APO";
+            } else {
+                tag.innerText = "PKK";
+            }
+
+            // Karakter görünümünü sıfırla
+            resetCharacterStyle();
+            switchScreen('screen-game');
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-text').innerText = `${currentNickname} | XP: ${xp}`;
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function resetCharacterStyle() {
+            const body = document.getElementById('stickman-body');
+            body.style.filter = "none";
+            document.getElementById('face-icon').innerText = "😊";
+        }
+
+        function interactCharacter() {
+            // XP 10'ar artar
+            xp += 10;
+            updateHUD();
+
+            const body = document.getElementById('stickman-body');
+            const face = document.getElementById('face-icon');
+
+            // Neresine dokunulursa morarmış/kızarmış gibi filtre efekti
+            body.style.filter = "drop-shadow(0 0 10px darkred) sepia(1) hue-rotate(300deg) saturate(3)";
+
+            if (currentMode === 1 || currentMode === 3) {
+                // Kırbaçlama modu: Yüz 2 saniyeliğine ağlar gibi olsun
+                face.innerText = "😭";
+                setTimeout(() => {
+                    face.innerText = "😊";
+                }, 2000);
+
+                setTimeout(() => {
+                    body.style.filter = "none";
+                }, 500);
+
+            } else if (currentMode === 2 || currentMode === 4) {
+                // Bombalama modu: Bomba efekti / Vücut 3 saniyeliğine siyah olsun
+                body.style.filter = "brightness(0.1) drop-shadow(0 0 15px orange)";
+                face.innerText = "💥";
+
+                setTimeout(() => {
+                    face.innerText = "😊";
+                }, 1000);
+
+                setTimeout(() => {
+                    body.style.filter = "none";
+                }, 3000);
+            }
+        }
+
+        function endGame() {
+            switchScreen('screen-end');
+        }
+    </script>
+</body>
+</html>
